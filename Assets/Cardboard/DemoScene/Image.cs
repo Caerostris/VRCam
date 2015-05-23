@@ -2,6 +2,7 @@
 	using UnityEngine;
 
 	public class Image {
+		// flattened 2D array containing the image left to right, bottom to top
 		private Color32[] pixels;
 		private int width;
 		private int height;
@@ -55,6 +56,17 @@
 			tex2d.SetPixels32 (pixels);
 			tex2d.Apply ();
 			return tex2d;
+		}
+
+		public Color32 getPixel(int x, int y) {
+			// pixels array goes left to right, from bottom to top
+			int rowLength = width;
+			int skipRows = height - y - 1; // -1 for null-based
+
+			int arrayPosition = rowLength * skipRows; // y position: skipped n rows
+			arrayPosition += x; // x position
+
+			return pixels [arrayPosition];
 		}
 	}
 }

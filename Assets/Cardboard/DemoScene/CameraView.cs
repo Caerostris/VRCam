@@ -9,6 +9,7 @@ public class CameraView : MonoBehaviour {
 	WebCamTexture webcamTexture;
 	EuclideanFilter euclideanFilter;
 	BinaryFilter binaryFilter;
+	BlobFinder blobFinder;
 
 	// Use this for initialization
 	void Start () {
@@ -19,7 +20,8 @@ public class CameraView : MonoBehaviour {
 
 //		screen = GameObject.Find ("screen");
 		euclideanFilter = new EuclideanFilter (new Color32 (0, 145, 245, 1), 120);
-		binaryFilter = new BinaryFilter (60);
+		binaryFilter = new BinaryFilter (20);
+		blobFinder = new BlobFinder ();
 	}
 
 	// Update is called once per frame
@@ -28,6 +30,11 @@ public class CameraView : MonoBehaviour {
 		Image euclidean = euclideanFilter.Process (image);
 		Image grayscale = GrayscaleFilter.Process (euclidean);
 		Image binary = binaryFilter.Process (grayscale);
+
+		Rectangle[] rectangles = blobFinder.Process (binary);
+		if (rectangles.Length > 0) {
+			Debug.Log ("" + rectangles.Length);
+		}
 
 		Texture2D tex2d = binary.GetTexture2D ();
 		GetComponent<Renderer> ().material.mainTexture = tex2d;
