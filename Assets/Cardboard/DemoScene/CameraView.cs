@@ -7,7 +7,8 @@ using UnityColorFilters;
 public class CameraView : MonoBehaviour {
 	GameObject screen;
 	WebCamTexture webcamTexture;
-	EuclideanFilter filter;
+	EuclideanFilter euclideanFilter;
+	BinaryFilter binaryFilter;
 
 	// Use this for initialization
 	void Start () {
@@ -17,16 +18,18 @@ public class CameraView : MonoBehaviour {
 		webcamTexture.Play ();
 
 //		screen = GameObject.Find ("screen");
-		filter = new EuclideanFilter (new Color32 (0, 145, 245, 1), 150);
+		euclideanFilter = new EuclideanFilter (new Color32 (0, 145, 245, 1), 120);
+		binaryFilter = new BinaryFilter (60);
 	}
 
 	// Update is called once per frame
 	void Update () {
 		Image image = Image.FromWebCamTexture (webcamTexture);
-		Image euclidean = filter.Process (image);
-		Image grayscale = Grayscale.Process (euclidean);
+		Image euclidean = euclideanFilter.Process (image);
+		Image grayscale = GrayscaleFilter.Process (euclidean);
+		Image binary = binaryFilter.Process (grayscale);
 
-		Texture2D tex2d = grayscale.GetTexture2D ();
+		Texture2D tex2d = binary.GetTexture2D ();
 		GetComponent<Renderer> ().material.mainTexture = tex2d;
 	//	screen.GetComponent<Renderer> ().material.mainTexture = tex2d;
 	}

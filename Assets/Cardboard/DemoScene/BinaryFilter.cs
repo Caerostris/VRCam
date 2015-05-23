@@ -14,25 +14,27 @@
 			}
 		}
 
-		public Threshold(byte thresholdValue) {
+		public BinaryFilter(byte thresholdValue) {
 			this.thresholdValue = thresholdValue;
 		}
 
 		public Image Process(Image image) {
 			Color32[] newPixels = new Color32[image.Pixels.Length];
-			byte thresholdValue3 = thresholdValue * 3;
+			int thresholdValue3 = thresholdValue * 3;
 
 			// for each pixel
 			for (int i = 0; i < image.Pixels.Length; i++) {
 				Color32 color = image.Pixels [i];
 
 				int intensity = color.r + color.g + color.b;
-				if(intensity > thresholdValue3) {
+				if(intensity >= thresholdValue3) {
 					newPixels[i] = new Color32(255, 255, 255, color.a);
 				} else {
 					newPixels[i] = new Color32(0, 0, 0, color.a);
 				}
 			}
+
+			return new Image (newPixels, image.Width, image.Height);
 		}
 	}
 }

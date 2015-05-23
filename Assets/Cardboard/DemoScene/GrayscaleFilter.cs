@@ -2,7 +2,7 @@
 	using UnityEngine;
 	using System;
 
-	public class Grayscale {
+	public class GrayscaleFilter {
 		private static float rWeight = 0.2989f;
 		private static float gWeight = 0.5870f;
 		private static float bWeight = 0.1140f;
