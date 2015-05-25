@@ -1,5 +1,5 @@
 ﻿namespace UnityColorFilters {
-	using UnityEngine;
+//	using UnityEngine;
 	using System.Collections.Generic;
 	using System;
 
@@ -42,8 +42,8 @@
 	}
 
 	public class BlobFinder {
-		private int minWidth;
-		private int minHeight;
+		private int minWidth = 0;
+		private int minHeight = 0;
 
 		public int MinWidth {
 			get {
@@ -66,49 +66,32 @@
 		}
 
 		public Rectangle[] Process(Image image) {
-			// go over all rows
 			List<Rectangle> rectangles = new List<Rectangle> ();
-			List<Coordinate> seen = new List<Coordinate> ();
 
+			// go over all rows
 			for(int row = 0; row < image.Height; row++) {
 				// go over all pixels
 				for(int xPos = 0; xPos < image.Width; xPos++) {
 					Coordinate coordinate = new Coordinate(xPos, row);
 
-					// don't go over this pixel again
-					if(seen.Contains(coordinate)) {
+					// do not check coordinates that are inside a discovered rectangle
+					// -> as a consequence, we do not detect blobs that are inside another blob's rectangle
+					if(rectangles.Exists(rect => rect.ContainsCoordinate(coordinate.X, coordinate.Y))) {
 						continue;
 					}
 
-					Color color = image.getPixel(coordinate.X, coordinate.Y);
+					Color32 color = image.getPixel(coordinate.X, coordinate.Y);
 					if(color.r != 0 && color.g != 0 && color.b != 0) {
 						// breadth first search expansion
+						Rectangle blob = breadthFirstSearchBlob(image, coordinate);
 
-						// construct a rectangle around the blob
-						List<Coordinate> blob = breadthFirstSearchBlob(image, coordinate, seen);
-
-						int topMost = 0;
-						int bottomMost = image.Height;
-						int leftMost = 0;
-						int rightMost = image.Width;
-
-						// for every coordinate in the blob
-						foreach(Coordinate coord in blob) {
-							if(coord.Y < topMost) {
-								topMost = coord.Y;
-							} else if(coord.Y > bottomMost) {
-								bottomMost = coord.Y;
-							}
-
-							if(coord.X < leftMost) {
-								leftMost = coord.X;
-							} else if(coord.X > rightMost) {
-								rightMost = coord.X;
-							}
+						// check if it has minHeight and minWidth
+						if(blob.GetHeight >= minHeight && blob.GetWidth >= minWidth) {
+			//				Debug.Log ("Found valid blob :) ");
+							rectangles.Add(blob);
+						} else {
+			//				Debug.Log ("Blob " + blob.TopLeftX + " " + blob.TopLeftY + " " + blob.BottomRightX + " " + blob.BottomRightY + " invalid. Size: " + blob.GetWidth + "x" + blob.GetHeight + " checked coordinate " + coordinate.X + " " + coordinate.Y);
 						}
-
-						Rectangle rect = new Rectangle(leftMost, topMost, rightMost, bottomMost);
-						rectangles.Add(rect);
 					}
 				}
 			}
@@ -116,67 +99,100 @@
 			return rectangles.ToArray ();
 		}
 
-		private List<Coordinate> breadthFirstSearchBlob(Image image, Coordinate startingPoint, List<Coordinate> seen) {
-			List<Coordinate> ret = new List<Coordinate> ();
-			breadthFirstSearchBlob (image, getAdjacentCoordinates(image, startingPoint), ret, seen);
-			return ret;
+		private Rectangle breadthFirstSearchBlob(Image image, Coordinate startingPoint) {
+			List<Coordinate> seen = new List<Coordinate> ();
+			List<Coordinate> coordinatesToCheck = new List<Coordinate> ();
+			Rectangle blob = new Rectangle (startingPoint.X, startingPoint.Y, startingPoint.X, startingPoint.Y);
+
+			coordinatesToCheck.Add (startingPoint);
+			coordinatesToCheck.AddRange (getUnseenAdjacentCoordinates (image, startingPoint, seen));
+
+			breadthFirstSearchBlob (image, coordinatesToCheck, blob, seen);
+
+			return blob;
 		}
 
 		private void breadthFirstSearchBlob(Image image,
-		                                                List<Coordinate> coordinatesToCheck,
-		                                                List<Coordinate> blob,
-		                                                List<Coordinate> seen) {
-			if (coordinatesToCheck.Capacity == 0) {
-				return;
-			}
-
+		                                    List<Coordinate> coordinatesToCheck,
+		                                    Rectangle blob,
+		                                    List<Coordinate> seen) {
 			List<Coordinate> newCoordinatesToCheck = new List<Coordinate>();
 			foreach (Coordinate coordinate in coordinatesToCheck) {
 				if (seen.Contains (coordinate)) {
 					continue;
 				}
+				seen.Add(coordinate);
 
-				Color color = image.getPixel (coordinate.X, coordinate.Y);
-				if (color.r != 255 || color.g != 255 || color.b != 255) {
-					// not a bright pixel so not part of the blob
+				Color32 color = image.getPixel (coordinate.X, coordinate.Y);
+				if (color.r == 0 || color.g == 0 || color.b == 0) {
+					// black pixel so not part of the blob
 					continue;
 				}
 
-				newCoordinatesToCheck.AddRange(getAdjacentCoordinates(image, coordinate));
+				// also expand from this point in the next function call
+				newCoordinatesToCheck.AddRange(getUnseenAdjacentCoordinates(image, coordinate, seen));
 
-				seen.Add(coordinate);
-				blob.Add (coordinate);
+				if (coordinate.X < blob.TopLeftX) {
+					blob.TopLeftX = coordinate.X;
+				} else if(coordinate.X > blob.BottomRightX) {
+					blob.BottomRightX = coordinate.X;
+				}
+
+				if(coordinate.Y < blob.TopLeftY) {
+					blob.TopLeftY = coordinate.Y;
+				} else if(coordinate.Y > blob.BottomRightY) {
+					blob.BottomRightY = coordinate.Y;
+				}
 			}
 
-			breadthFirstSearchBlob (image, newCoordinatesToCheck, blob, seen);
+			// only keep going if there is more to check
+			if (coordinatesToCheck.Count > 0) {
+				// expand to all points in the expandation list
+				breadthFirstSearchBlob (image, newCoordinatesToCheck, blob, seen);
+			}
 		}
 
-		private List<Coordinate> getAdjacentCoordinates(Image image, Coordinate coordinate) {
+		private List<Coordinate> getUnseenAdjacentCoordinates(Image image, Coordinate coordinate, List<Coordinate> seen) {
 			List<Coordinate> adjacentCoordinates = new List<Coordinate> ();
 
 			// left
 			if (coordinate.X > 0) {
-				adjacentCoordinates.Add (new Coordinate (coordinate.X - 1, coordinate.Y));
+				Coordinate coord = new Coordinate (coordinate.X - 1, coordinate.Y);
+				if(!seen.Contains(coord)) {
+					adjacentCoordinates.Add (coord);
+				}
 			}
 
 			// right
 			if (coordinate.X < image.Width - 1) {
-				adjacentCoordinates.Add (new Coordinate (coordinate.X + 1, coordinate.Y));
+				Coordinate coord = new Coordinate (coordinate.X + 1, coordinate.Y);
+				if(!seen.Contains(coord)) {
+					adjacentCoordinates.Add (coord);
+				}
 			}
 
 			// down
 			if (coordinate.Y < image.Height - 1) {
-				adjacentCoordinates.Add (new Coordinate (coordinate.X, coordinate.Y + 1));
+				Coordinate coord = new Coordinate (coordinate.X, coordinate.Y + 1);
+				if(!seen.Contains(coord)) {
+					adjacentCoordinates.Add (coord);
+				}
 			}
 
 			// down-left
 			if (coordinate.X > 0 && coordinate.Y < image.Height - 1) {
-				adjacentCoordinates.Add (new Coordinate (coordinate.X - 1, coordinate.Y + 1));
+				Coordinate coord = new Coordinate (coordinate.X - 1, coordinate.Y + 1);
+				if(!seen.Contains(coord)) {
+					adjacentCoordinates.Add (coord);
+				}
 			}
 
 			// down-right
 			if (coordinate.X < image.Width - 1 && coordinate.Y < image.Height - 1) {
-				adjacentCoordinates.Add (new Coordinate (coordinate.X + 1, coordinate.Y + 1));
+				Coordinate coord = new Coordinate (coordinate.X + 1, coordinate.Y + 1);
+				if(!seen.Contains(coord)) {
+					adjacentCoordinates.Add (coord);
+				}
 			}
 
 			return adjacentCoordinates;

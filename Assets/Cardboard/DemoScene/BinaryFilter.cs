@@ -18,23 +18,33 @@
 			this.thresholdValue = thresholdValue;
 		}
 
-		public Image Process(Image image) {
-			Color32[] newPixels = new Color32[image.Pixels.Length];
-			int thresholdValue3 = thresholdValue * 3;
-
+		public Image ApplyInPlace(Image image) {
 			// for each pixel
 			for (int i = 0; i < image.Pixels.Length; i++) {
-				Color32 color = image.Pixels [i];
-
-				int intensity = color.r + color.g + color.b;
-				if(intensity >= thresholdValue3) {
-					newPixels[i] = new Color32(255, 255, 255, color.a);
-				} else {
-					newPixels[i] = new Color32(0, 0, 0, color.a);
-				}
+				image.Pixels[i] = ApplyToPixel(image.Pixels[i]);
 			}
+			
+			return image;
+		}
 
+		public Image Apply(Image image) {
+			Color32[] newPixels = new Color32[image.Pixels.Length];
+			
+			// for each pixel
+			for (int i = 0; i < image.Pixels.Length; i++) {
+				newPixels[i] = ApplyToPixel(image.Pixels[i]);
+			}
+			
 			return new Image (newPixels, image.Width, image.Height);
+		}
+
+		private Color32 ApplyToPixel(Color32 color) {
+			int intensity = color.r + color.g + color.b;
+			if(intensity >= thresholdValue * 3) {
+				return new Color32(255, 255, 255, color.a);
+			} else {
+				return new Color32(0, 0, 0, color.a);
+			}
 		}
 	}
 }

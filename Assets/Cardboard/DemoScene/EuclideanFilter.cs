@@ -55,41 +55,46 @@
 			this.radius = radius;
 		}
 
-		public Image Process(Image image) {
+		public Image ApplyInPlace(Image image) {
+			// for each pixel
+			for (int i = 0; i < image.Pixels.Length; i++) {
+				image.Pixels[i] = ApplyToPixel(image.Pixels[i]);
+			}
+
+			return image;
+		}
+
+		public Image Apply(Image image) {
 			Color32[] newPixels = new Color32[image.Pixels.Length];
-			
-			int cR = center.r;
-			int cG = center.g;
-			int cB = center.b;
-			int radius2 = radius * radius;
-			
-			int dR, dG, dB;
 			
 			// for each pixel
 			for (int i = 0; i < image.Pixels.Length; i++) {
-				Color32 color = image.Pixels[i];
-				
-				dR = cR - color.r;
-				dG = cG - color.g;
-				dB = cB - color.b;
-				
-				// calculate the distance
-				Color32 newColor = color;
-				if(dR * dR + dG * dG + dB * dB <= radius2) {
-					if(!fillOutside) {
-						newColor = fillColor;
-					}
-				} else {
-					if(fillOutside) {
-						newColor = fillColor;
-					}
-				}
-				
-				newPixels[i] = newColor;
-				//Debug.Log (color.ToString ());
+				newPixels[i] = ApplyToPixel(image.Pixels[i]);
 			}
 
 			return new Image (newPixels, image.Width, image.Height);
+		}
+
+		private Color32 ApplyToPixel(Color32 color) {
+			int dR, dG, dB;
+
+			dR = center.r - color.r;
+			dG = center.g - color.g;
+			dB = center.b - color.b;
+			
+			// calculate the distance
+			Color32 newColor = color;
+			if(dR * dR + dG * dG + dB * dB <= radius * radius) {
+				if(!fillOutside) {
+					newColor = fillColor;
+				}
+			} else {
+				if(fillOutside) {
+					newColor = fillColor;
+				}
+			}
+
+			return newColor;
 		}
 	}
 }

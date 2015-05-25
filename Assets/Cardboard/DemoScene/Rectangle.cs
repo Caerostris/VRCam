@@ -27,7 +27,7 @@
 			}
 		}
 
-		public int BottomRigtX {
+		public int BottomRightX {
 			get {
 				return bottomRightX;
 			}
@@ -47,11 +47,31 @@
 			}
 		}
 
+		public int GetWidth {
+			get {
+				return bottomRightY - topLeftY;
+			}
+		}
+
+		public int GetHeight {
+			get {
+				return bottomRightX - topLeftX;
+			}
+		}
+
 		public Rectangle(int topLeftX, int topLeftY, int bottomRightX, int bottomRightY) {
 			this.topLeftX = topLeftX;
 			this.topLeftY = topLeftY;
 			this.bottomRightX = bottomRightX;
 			this.bottomRightY = bottomRightY;
+		}
+
+		public bool ContainsCoordinate(int x, int y) {
+			if (x > topLeftX && x < bottomRightX && y > topLeftY && y < bottomRightY) {
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
