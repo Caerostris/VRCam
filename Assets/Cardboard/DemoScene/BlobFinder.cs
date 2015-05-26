@@ -95,83 +95,46 @@
 			}
 
 			// check if it has minHeight and minWidth
-			Debug.Log ("Length before pruning: " + rectangles.Count);
+	//		Debug.Log ("Length before pruning: " + rectangles.Count);
 			rectangles.RemoveAll (blob => blob.GetHeight < minHeight || blob.GetWidth < minWidth);
-			Debug.Log ("Length after: " + rectangles.Count);
+	//		Debug.Log ("Length after: " + rectangles.Count);
 			return rectangles.ToArray ();
 		}
 
-		// edge: has at least one neighbouring pixel that is black
 		private Rectangle expandBlob(Image image, Coordinate startingPoint) {
 			Rectangle blob = new Rectangle (startingPoint.X, startingPoint.Y, startingPoint.X, startingPoint.Y);
 			List<Coordinate> seen = new List<Coordinate> ();
+			List<Coordinate> pointsToCheck = new List<Coordinate> ();
+
 			seen.Add (startingPoint);
-			Coordinate neighbour = startingPoint;
+			pointsToCheck = getUnseenWhiteNeighbourPixels (startingPoint, image, seen);
 
-			// only consider pixels which have at least three non-black neighbouring pixels
-			if (countColouredNeighbours (getNeighbours (startingPoint, image), image) < 3) {
-				return null;
-			}
+			while (pointsToCheck.Count > 0) {
+				List<Coordinate> newPointsToCheck = new List<Coordinate> ();
 
-			while ((neighbour = getNextUnseenBorderNeighbour(neighbour, image, seen)) != null) {
-				seen.Add(neighbour);
+				foreach(Coordinate pointToCheck in pointsToCheck) {
+					if (pointToCheck.X < blob.TopLeftX) {
+						blob.TopLeftX = pointToCheck.X;
+					} else if(pointToCheck.X > blob.BottomRightX) {
+						blob.BottomRightX = pointToCheck.X;
+					}
+					if(pointToCheck.Y < blob.TopLeftY) {
+						blob.TopLeftY = pointToCheck.Y;
+					} else if(pointToCheck.Y > blob.BottomRightY) {
+						blob.BottomRightY = pointToCheck.Y;
+					}
 
-				if (neighbour.X < blob.TopLeftX) {
-					blob.TopLeftX = neighbour.X;
-				} else if(neighbour.X > blob.BottomRightX) {
-					blob.BottomRightX = neighbour.X;
+					newPointsToCheck.AddRange (getUnseenWhiteNeighbourPixels (pointToCheck, image, seen));
 				}
-				if(neighbour.Y < blob.TopLeftY) {
-					blob.TopLeftY = neighbour.Y;
-				} else if(neighbour.Y > blob.BottomRightY) {
-					blob.BottomRightY = neighbour.Y;
-				}
+
+				pointsToCheck.Clear ();
+				pointsToCheck = newPointsToCheck;
 			}
 
 			return blob;
 		}
 
-		private Coordinate getNextUnseenBorderNeighbour(Coordinate coordinate, Image image, List<Coordinate> seen) {
-			int[][] modifiers = {
-				new int[]{0, -1}, // up
-				new int[]{1, -1}, // up-right
-				new int[]{1, 0}, // right
-				new int[]{1, 1}, // down-right
-				new int[]{0, 1}, // down
-				new int[]{-1, 1}, // down-left
-				new int[]{-1, 0}, // left
-				new int[]{-1, -1} // up-left
-			};
-			
-			foreach (int[] modifier in modifiers) {
-				Coordinate modCoord = new Coordinate(coordinate.X + modifier[0], coordinate.Y + modifier[1]);
-				if(modCoord.X < 0 || modCoord.X > image.Width -1) {
-					continue;
-				}
-				
-				if(modCoord.Y < 0 || modCoord.Y > image.Height - 1) {
-					continue;
-				}
-
-				if(seen.Contains(modCoord) || isBlackPixel(modCoord, image)) {
-					continue;
-				}
-
-
-				List<Coordinate> n = getNeighbours(modCoord, image);
-				if(n.Exists(neigh => isBlackPixel(neigh, image))) {
-					if(countColouredNeighbours(n, image) >= 3) {
-						return modCoord;
-					} else {
-						seen.Add (modCoord);
-					}
-				}
-			}
-			
-			return null;
-		}
-
-		private List<Coordinate> getNeighbours(Coordinate coordinate, Image image) {
+		private List<Coordinate> getUnseenWhiteNeighbourPixels(Coordinate coordinate, Image image, List<Coordinate> seen) {
 			int[][] modifiers = {
 				new int[]{0, -1}, // up
 				new int[]{1, -1}, // up-right
@@ -193,8 +156,11 @@
 				if(modCoord.Y < 0 || modCoord.Y > image.Height - 1) {
 					continue;
 				}
-
-				adjacentCoordinates.Add (modCoord);
+;
+				if(!seen.Contains(modCoord) && !isBlackPixel(modCoord, image)) {
+					adjacentCoordinates.Add (modCoord);
+					seen.Add (modCoord);
+				}
 			}
 
 			return adjacentCoordinates;
@@ -204,16 +170,6 @@
 			Color32 color = image.getPixel(coordinate.X, coordinate.Y);
 
 			return color.r == 0 && color.g == 0 && color.b == 0;
-		}
-
-		private int countColouredNeighbours(List<Coordinate> neighbours, Image image) {
-			int count = 0;
-			neighbours.ForEach(delegate(Coordinate coord) {
-				if(!isBlackPixel(coord, image)) {
-					count++;
-				}
-			});
-			return count;
 		}
 	}
 }
