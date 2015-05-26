@@ -53,7 +53,6 @@
      <Compile Include="Assets\Cardboard\DemoScene\DisableFog.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\EdgeDetection.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\EuclideanFilter.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\ExpandPixels.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\GrayscaleFilter.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Image.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Rectangle.cs" />

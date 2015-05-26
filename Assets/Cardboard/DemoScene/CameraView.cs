@@ -36,8 +36,8 @@ public class CameraView : MonoBehaviour {
 			Debug.Log ("finished processing");
 			StartProcessing();
 
-	//		Texture2D tex2d = processedImage.GetTexture2D ();
-	//		GetComponent<Renderer> ().material.mainTexture = tex2d;
+			Texture2D tex2d = processedImage.GetTexture2D ();
+			GetComponent<Renderer> ().material.mainTexture = tex2d;
 		} else {
 	//		Debug.Log ("Processing");
 		}
@@ -64,7 +64,6 @@ class ImageProcessor {
 	EuclideanFilter euclideanFilter;
 	BinaryFilter binaryFilter;
 	BlobFinder blobFinder;
-	ExpandPixels pixelExpander;
 
 	public ImageProcessor(Image image, CameraView cameraview) {
 		this.image = image;
@@ -75,22 +74,27 @@ class ImageProcessor {
 		blobFinder = new BlobFinder ();
 		blobFinder.MinWidth = 50;
 		blobFinder.MinHeight = 50;
-		pixelExpander = new ExpandPixels (20);
 	}
 
 	public void ThreadRun() {
-		Image processed = euclideanFilter.ApplyInPlace (image);
+		Image processed = null;
+		try {
+		processed = euclideanFilter.ApplyInPlace (image);
 		GrayscaleFilter.ApplyInPlace (processed);
 		binaryFilter.ApplyInPlace (processed);
-		BinaryImage bin = null;
-	//	bin = EdgeDetection.Apply (BinaryImage.FromImage (processed));
-	//	bin = pixelExpander.Apply (bin);
-
 	//	processed = bin.GetImage ();
-	//	Debug.Log ("Starting blob analysis");
-
+		Debug.Log ("Starting blob analysis");
 		Rectangle[] rectangles = blobFinder.Process (processed);
-	//	Debug.Log ("Blob analysis finished" + ((rectangles.Length > 0) ? "" + rectangles.Length : ""));
+		Debug.Log ("Blob analysis finished" + ((rectangles.Length > 0) ? "" + rectangles.Length : ""));
+
+			if(rectangles.Length > 0) {
+				foreach(Rectangle rect in rectangles) {
+					Debug.Log (rect.TopLeftX + " " + rect.TopLeftY + " " + rect.BottomRightX + " " + rect.BottomRightY);
+				}
+			}
+		} catch(Exception e) {
+			Debug.Log (e.ToString ());
+		}
 
 		cameraView.processedImage = processed;
 		cameraView.Processing = false;

@@ -1,28 +1,26 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Cardboard/DemoScene/EdgeDetection.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Cardboard/DemoScene/BlobFinder.cs">
     <Files>
-      <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="92" Column="23" />
-      <File FileName="Assets/Cardboard/DemoScene/BinaryFilter.cs" Line="40" Column="1" />
-      <File FileName="Assets/Cardboard/DemoScene/Rectangle.cs" Line="69" Column="31" />
-      <File FileName="../../../../Projects/VRCTest/VRCTest/Test.cs" Line="52" Column="30" />
-      <File FileName="../../../../Projects/VRCTest/VRCTest/Rectangle.cs" Line="70" Column="67" />
       <File FileName="Assets/Cardboard/DemoScene/DisableFog.cs" Line="1" Column="1" />
+      <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="82" Column="41" />
+      <File FileName="Assets/Cardboard/DemoScene/BinaryFilter.cs" Line="40" Column="1" />
+      <File FileName="Assets/Cardboard/DemoScene/Rectangle.cs" Line="1" Column="1" />
+      <File FileName="../../../../Projects/VRCTest/VRCTest/Test.cs" Line="1" Column="1" />
+      <File FileName="../../../../Projects/VRCTest/VRCTest/Rectangle.cs" Line="1" Column="1" />
       <File FileName="Assets/Cardboard/DemoScene/EuclideanFilter.cs" Line="76" Column="4" />
       <File FileName="Assets/Cardboard/DemoScene/GrayscaleFilter.cs" Line="17" Column="17" />
-      <File FileName="Assets/Cardboard/DemoScene/BlobFinder.cs" Line="89" Column="1" />
-      <File FileName="Assets/Cardboard/DemoScene/EdgeDetection.cs" Line="28" Column="29" />
-      <File FileName="Assets/Cardboard/DemoScene/BinaryImage.cs" Line="83" Column="75" />
+      <File FileName="Assets/Cardboard/DemoScene/BlobFinder.cs" Line="110" Column="5" />
+      <File FileName="Assets/Cardboard/DemoScene/EdgeDetection.cs" Line="17" Column="4" />
+      <File FileName="Assets/Cardboard/DemoScene/BinaryImage.cs" Line="78" Column="16" />
       <File FileName="Assets/Cardboard/DemoScene/Image.cs" Line="72" Column="2" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
-        <State expanded="True">
+        <State expanded="True" selected="True">
           <Node name="Assembly-CSharp" expanded="True">
             <Node name="Cardboard" expanded="True">
-              <Node name="DemoScene" expanded="True">
-                <Node name="EdgeDetection.cs" selected="True" />
-              </Node>
+              <Node name="DemoScene" expanded="True" />
             </Node>
           </Node>
         </State>
