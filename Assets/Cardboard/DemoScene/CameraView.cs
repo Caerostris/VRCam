@@ -35,11 +35,12 @@ public class CameraView : MonoBehaviour {
 		if (!processing) {
 			Debug.Log ("finished processing");
 			StartProcessing();
+		}
 
+		if(processedImage != null) {
 			Texture2D tex2d = processedImage.GetTexture2D ();
 			GetComponent<Renderer> ().material.mainTexture = tex2d;
-		} else {
-	//		Debug.Log ("Processing");
+			processedImage = null;
 		}
 	}
 
@@ -79,24 +80,28 @@ class ImageProcessor {
 	public void ThreadRun() {
 		Image processed = null;
 		try {
+
 		processed = euclideanFilter.ApplyInPlace (image);
 		GrayscaleFilter.ApplyInPlace (processed);
 		binaryFilter.ApplyInPlace (processed);
-	//	processed = bin.GetImage ();
-		Debug.Log ("Starting blob analysis");
-		Rectangle[] rectangles = blobFinder.Process (processed);
-		Debug.Log ("Blob analysis finished" + ((rectangles.Length > 0) ? "" + rectangles.Length : ""));
+		BinaryImage bin = BinaryImage.FromImage (processed);
+		bin = EdgeDetection.Apply (bin);
+		bin = new ImageObjectScaler(40).Apply(bin);
+		processed = bin.GetImage ();
 
-			if(rectangles.Length > 0) {
-				foreach(Rectangle rect in rectangles) {
-					Debug.Log (rect.TopLeftX + " " + rect.TopLeftY + " " + rect.BottomRightX + " " + rect.BottomRightY);
-				}
+		Rectangle[] rectangles = blobFinder.Process (processed, cameraView);
+
+		if(rectangles.Length > 0) {
+			foreach(Rectangle rect in rectangles) {
+				Debug.Log (rect.TopLeftX + " " + rect.TopLeftY + " " + rect.BottomRightX + " " + rect.BottomRightY);
 			}
+		}
+
 		} catch(Exception e) {
 			Debug.Log (e.ToString ());
 		}
 
-		cameraView.processedImage = processed;
+	//	cameraView.processedImage = processed;
 		cameraView.Processing = false;
 	}
 }

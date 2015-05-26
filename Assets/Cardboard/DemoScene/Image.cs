@@ -68,5 +68,16 @@
 
 			return pixels [arrayPosition];
 		}
+
+		public void setPixel(int x, int y, Color32 value) {
+			// pixels array goes left to right, from bottom to top
+			int rowLength = width;
+			int skipRows = height - y - 1; // -1 for null-based
+			
+			int arrayPosition = rowLength * skipRows; // y position: skipped n rows
+			arrayPosition += x; // x position
+			
+			pixels [arrayPosition] = value;
+		}
 	}
 }

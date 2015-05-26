@@ -55,6 +55,7 @@
      <Compile Include="Assets\Cardboard\DemoScene\EuclideanFilter.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\GrayscaleFilter.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Image.cs" />
+     <Compile Include="Assets\Cardboard\DemoScene\ImageObjectScaler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Rectangle.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Teleport.cs" />
      <Compile Include="Assets\Cardboard\Legacy\DemoScene\TeleportLegacyUI.cs" />

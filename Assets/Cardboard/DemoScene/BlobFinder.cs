@@ -65,7 +65,7 @@
 			}
 		}
 
-		public Rectangle[] Process(Image image) {
+		public Rectangle[] Process(Image image, CameraView cameraView) {
 			List<Rectangle> rectangles = new List<Rectangle> ();
 
 			// go over all rows
@@ -85,11 +85,11 @@
 					if(color.r != 0 || color.g != 0 || color.b != 0) {
 						// breadth first search expansion
 						Debug.Log ("Expanding " + coordinate.X + " " + coordinate.Y);
-						Rectangle blob = expandBlob(image, coordinate);
+						Rectangle blob = expandBlob(image, coordinate, cameraView);
 						if(blob != null) {
 							rectangles.Add(blob);
 						}
-	//					Debug.Log ("Found blob " + blob.TopLeftX + " " + blob.TopLeftY + " " + blob.BottomRightX + " " + blob.BottomRightY + " Size: " + blob.GetWidth + "x" + blob.GetHeight + " checked coordinate " + coordinate.X + " " + coordinate.Y);
+						Debug.Log ("Found blob " + blob.TopLeftX + " " + blob.TopLeftY + " " + blob.BottomRightX + " " + blob.BottomRightY + " Size: " + blob.GetWidth + "x" + blob.GetHeight + " checked coordinate " + coordinate.X + " " + coordinate.Y);
 					}
 				}
 			}
@@ -101,13 +101,23 @@
 			return rectangles.ToArray ();
 		}
 
-		private Rectangle expandBlob(Image image, Coordinate startingPoint) {
+		private Rectangle expandBlob(Image image, Coordinate startingPoint, CameraView cameraView) {
+			Color32[] debImgP = new Color32[image.Pixels.Length];
+			for (int i = 0; i < debImgP.Length; i++) {
+				debImgP [i] = new Color32 (0, 0, 0, 1);
+			}
+			Image debImg = new Image (debImgP, image.Width, image.Height);
+
+			bool[] bin = new bool[image.Pixels.Length];
+			for (int i = 0; i < bin.Length; i++) {
+				bin [i] = false;
+			}
+
+			BinaryImage binaryMap = new BinaryImage (bin, image.Width, image.Height);
 			Rectangle blob = new Rectangle (startingPoint.X, startingPoint.Y, startingPoint.X, startingPoint.Y);
-			List<Coordinate> seen = new List<Coordinate> ();
 			List<Coordinate> pointsToCheck = new List<Coordinate> ();
 
-			seen.Add (startingPoint);
-			pointsToCheck = getUnseenWhiteNeighbourPixels (startingPoint, image, seen);
+			pointsToCheck = getUnseenWhiteAdjacentPixels (startingPoint, image, binaryMap);
 
 			while (pointsToCheck.Count > 0) {
 				List<Coordinate> newPointsToCheck = new List<Coordinate> ();
@@ -124,17 +134,20 @@
 						blob.BottomRightY = pointToCheck.Y;
 					}
 
-					newPointsToCheck.AddRange (getUnseenWhiteNeighbourPixels (pointToCheck, image, seen));
+					debImg.setPixel(pointToCheck.X, pointToCheck.Y, new Color32(255, 0, 0, 1));
+					List<Coordinate> adjacent = getUnseenWhiteAdjacentPixels (pointToCheck, image, binaryMap);
+					newPointsToCheck.AddRange (adjacent);
 				}
 
 				pointsToCheck.Clear ();
 				pointsToCheck = newPointsToCheck;
+				cameraView.processedImage = debImg;
 			}
 
 			return blob;
 		}
 
-		private List<Coordinate> getUnseenWhiteNeighbourPixels(Coordinate coordinate, Image image, List<Coordinate> seen) {
+		private List<Coordinate> getUnseenWhiteAdjacentPixels(Coordinate coordinate, Image image, BinaryImage seenMap) {
 			int[][] modifiers = {
 				new int[]{0, -1}, // up
 				new int[]{1, -1}, // up-right
@@ -156,15 +169,43 @@
 				if(modCoord.Y < 0 || modCoord.Y > image.Height - 1) {
 					continue;
 				}
-;
-				if(!seen.Contains(modCoord) && !isBlackPixel(modCoord, image)) {
+
+				if(!adjacentCoordinates.Contains(modCoord) && !seenMap.getPixel(modCoord.X, modCoord.Y) && !isBlackPixel(modCoord, image)) {
 					adjacentCoordinates.Add (modCoord);
-					seen.Add (modCoord);
+					seenMap.setPixel(modCoord.X, modCoord.Y, true);
 				}
 			}
 
 			return adjacentCoordinates;
 		}
+
+		private List<Coordinate> getAdjacentPixels(Coordinate coordinate, Image image, List<Coordinate> seen) {
+			int[][] modifiers = {
+				new int[]{0, -1}, // up
+				new int[]{1, -1}, // up-right
+				new int[]{1, 0}, // right
+				new int[]{1, 1}, // down-right
+				new int[]{0, 1}, // down
+				new int[]{-1, 1}, // down-left
+				new int[]{-1, 0}, // left
+				new int[]{-1, -1} // up-left
+			};
+			List<Coordinate> adjacentCoordinates = new List<Coordinate> ();
+			
+			foreach (int[] modifier in modifiers) {
+				Coordinate modCoord = new Coordinate(coordinate.X + modifier[0], coordinate.Y + modifier[1]);
+				if(modCoord.X < 0 || modCoord.X > image.Width -1) {
+					continue;
+				}
+				
+				if(modCoord.Y < 0 || modCoord.Y > image.Height - 1) {
+					continue;
+				}
+			}
+			
+			return adjacentCoordinates;
+		}
+
 
 		private bool isBlackPixel(Coordinate coordinate, Image image) {
 			Color32 color = image.getPixel(coordinate.X, coordinate.Y);
