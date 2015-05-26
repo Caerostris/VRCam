@@ -67,7 +67,7 @@
 		}
 
 		public bool ContainsCoordinate(int x, int y) {
-			if (x > topLeftX && x < bottomRightX && y > topLeftY && y < bottomRightY) {
+			if (x >= topLeftX && x <= bottomRightX && y >= topLeftY && y <= bottomRightY) {
 				return true;
 			}
 

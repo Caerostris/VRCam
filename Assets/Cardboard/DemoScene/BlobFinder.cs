@@ -1,5 +1,5 @@
 ﻿namespace UnityColorFilters {
-//	using UnityEngine;
+	using UnityEngine;
 	using System.Collections.Generic;
 	using System;
 
@@ -80,22 +80,22 @@
 						continue;
 					}
 
+					// skip black pixels, expand from non-black pixels
 					Color32 color = image.getPixel(coordinate.X, coordinate.Y);
-					if(color.r != 0 && color.g != 0 && color.b != 0) {
+					if(color.r != 0 || color.g != 0 || color.b != 0) {
 						// breadth first search expansion
 						Rectangle blob = breadthFirstSearchBlob(image, coordinate);
 
-						// check if it has minHeight and minWidth
-						if(blob.GetHeight >= minHeight && blob.GetWidth >= minWidth) {
-			//				Debug.Log ("Found valid blob :) ");
-							rectangles.Add(blob);
-						} else {
-			//				Debug.Log ("Blob " + blob.TopLeftX + " " + blob.TopLeftY + " " + blob.BottomRightX + " " + blob.BottomRightY + " invalid. Size: " + blob.GetWidth + "x" + blob.GetHeight + " checked coordinate " + coordinate.X + " " + coordinate.Y);
-						}
+						rectangles.Add(blob);
+	//					Debug.Log ("Found blob " + blob.TopLeftX + " " + blob.TopLeftY + " " + blob.BottomRightX + " " + blob.BottomRightY + " Size: " + blob.GetWidth + "x" + blob.GetHeight + " checked coordinate " + coordinate.X + " " + coordinate.Y);
 					}
 				}
 			}
 
+			// check if it has minHeight and minWidth
+			Debug.Log ("Length before pruning: " + rectangles.Count);
+			rectangles.RemoveAll (blob => blob.GetHeight < minHeight || blob.GetWidth < minWidth);
+			Debug.Log ("Length after: " + rectangles.Count);
 			return rectangles.ToArray ();
 		}
 
@@ -117,20 +117,23 @@
 		                                    Rectangle blob,
 		                                    List<Coordinate> seen) {
 			List<Coordinate> newCoordinatesToCheck = new List<Coordinate>();
+
+			// remove black pixels as they are not part of the blob
+			newCoordinatesToCheck.RemoveAll (coordinate => isBlackPixel (coordinate, image));
+
 			foreach (Coordinate coordinate in coordinatesToCheck) {
 				if (seen.Contains (coordinate)) {
 					continue;
 				}
 				seen.Add(coordinate);
 
-				Color32 color = image.getPixel (coordinate.X, coordinate.Y);
-				if (color.r == 0 || color.g == 0 || color.b == 0) {
-					// black pixel so not part of the blob
-					continue;
-				}
-
 				// also expand from this point in the next function call
-				newCoordinatesToCheck.AddRange(getUnseenAdjacentCoordinates(image, coordinate, seen));
+				List<Coordinate> adjacent = getUnseenAdjacentCoordinates(image, coordinate, seen);
+
+				// remove all coordinates from the expandation that do not have at least on black neighbour
+				adjacent.RemoveAll(coord => !getUnseenAdjacentCoordinates(image, coord, seen).Exists(coord1 => isBlackPixel(coord1, image)));
+
+				newCoordinatesToCheck.AddRange(adjacent);
 
 				if (coordinate.X < blob.TopLeftX) {
 					blob.TopLeftX = coordinate.X;
@@ -196,6 +199,12 @@
 			}
 
 			return adjacentCoordinates;
+		}
+
+		private bool isBlackPixel(Coordinate coordinate, Image image) {
+			Color32 color = image.getPixel(coordinate.X, coordinate.Y);
+
+			return color.r == 0 && color.g == 0 && color.b == 0;
 		}
 	}
 }
