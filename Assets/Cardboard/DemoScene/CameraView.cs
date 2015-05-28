@@ -17,7 +17,6 @@ public class CameraView : MonoBehaviour {
 	private Renderer objRenderer = null;
 	private Color markerColor = new Color();
 	private Color objColor = new Color();
-	private GameObject screen = null;
 	private GameObject obj = null;
 
 	private bool displayProcessed = true;
@@ -59,26 +58,32 @@ public class CameraView : MonoBehaviour {
 			StartProcessing();
 		}
 
-		// if object was found
-		if (MarkerRect != null) {
-			// update the objects position
-			Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (MarkerRect.MidPointX, MarkerRect.MidPointY); // (320, 240);
-			Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, obj.transform.localPosition.z);
-			obj.transform.localPosition = position;
+		if (ProcessedImage != null) {
+			Texture2D tex2d = ProcessedImage.GetTexture2D ();
 
-			// hide text and display the object
-			noMarker.material.color = new Color32(1, 1, 1, 0);
-			obj.GetComponent<Renderer> ().material.color = objColor;
-		} else {
-			// show text and hide the object
-			noMarker.material.color = markerColor;
-			objRenderer.material.color = new Color32(1, 1, 1, 0);
+			// if object was found
+			if (MarkerRect != null ) {
+				// update the objects position
+				Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (MarkerRect.MidPointX, MarkerRect.MidPointY, tex2d); // (320, 240);
+				Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, obj.transform.localPosition.z);
+				obj.transform.localPosition = position;
+
+				// hide text and display the object
+				noMarker.material.color = new Color32 (1, 1, 1, 0);
+				obj.GetComponent<Renderer> ().material.color = objColor;
+			}
+
+			// check whether or not we are supposed to display the processed image
+			if (displayProcessed) {
+				GetComponent<Renderer> ().material.mainTexture = tex2d;
+			}
 		}
 
-		// check whether or not we are supposed to display the processed image
-		if (ProcessedImage != null && displayProcessed) {
-			GetComponent<Renderer> ().material.mainTexture = ProcessedImage.GetTexture2D ();
-			ProcessedImage = null;
+		if (MarkerRect == null) {
+			Debug.Log ("marker null");
+			// show text and hide the object
+			noMarker.material.color = markerColor;
+			objRenderer.material.color = new Color32 (1, 1, 1, 0);
 		}
 	}
 
@@ -96,14 +101,14 @@ public class CameraView : MonoBehaviour {
 		}
 	}
 
-	Vector2 getRelativeCoordinateFromTextureCoordinate(int x, int y) {
+	Vector2 getRelativeCoordinateFromTextureCoordinate(int x, int y, Texture2D texture) {
 		Vector2 relativeCoordinate = new Vector2 ();
 
 		// convert x & y from top-left based to center-based coordinates
-		float xCenterBased = x - (webcamTexture.width / 2.0f);
-		float yCenterBased = y - (webcamTexture.height / 2.0f);
-		float xScaled = xCenterBased / (1.5f * webcamTexture.width) * (-1);
-		float yScaled = yCenterBased / (1.5f * webcamTexture.height) * (-1);
+		float xCenterBased = x - (texture.width / 2.0f);
+		float yCenterBased = y - (texture.height / 2.0f);
+		float xScaled = xCenterBased / (1.5f * texture.width) * (-1);
+		float yScaled = yCenterBased / (1.5f * texture.height) * (-1);
 
 		relativeCoordinate.x = xScaled;
 		relativeCoordinate.y = yScaled;
@@ -124,20 +129,19 @@ class ImageProcessor {
 		this.image = image;
 		this.cameraView = cameraview;
 
-		euclideanFilter = new EuclideanFilter (new Color32 (235, 125, 35, 1), 70);
+		euclideanFilter = new EuclideanFilter (new Color32 (235, 125, 35, 1), 80);
 		binaryFilter = new BinaryFilter (20);
 		blobFinder = new BlobFinder ();
-		blobFinder.MinWidth = 50;
-		blobFinder.MinHeight = 50;
-		imageScaler = new ImageScaler (0.3f);
+		blobFinder.MinWidth = 15;
+		blobFinder.MinHeight = 15;
+		imageScaler = new ImageScaler (0.2f);
 	}
 
 	public void ThreadRun() {
 		try {
-System.Diagnostics.Stopwatch sTotal = System.Diagnostics.Stopwatch.StartNew ();
 			// apply colour filters
-			Image processed = imageScaler.Process(image);
-			euclideanFilter.ApplyInPlace (processed);
+			Image scaled = imageScaler.Process(image);
+			Image processed = euclideanFilter.Apply (scaled);
 			GrayscaleFilter.ApplyInPlace (processed);
 			binaryFilter.ApplyInPlace (processed);
 
@@ -148,7 +152,7 @@ System.Diagnostics.Stopwatch sTotal = System.Diagnostics.Stopwatch.StartNew ();
 			processed = bin.GetImage ();
 			// analyse the processed image for blobs
 			Rectangle[] rectangles = blobFinder.Process (processed);
-sTotal.Stop ();
+
 			if(rectangles.Length > 0) {
 				Rectangle biggest = null;
 				foreach(Rectangle rect in rectangles) {
@@ -158,14 +162,12 @@ sTotal.Stop ();
 				}
 
 				biggest.StrokeWidth = 5;
-				biggest.drawInPlace(image);
+				biggest.drawInPlace(scaled);
 				cameraView.MarkerRect = biggest;
-				Debug.Log ("sTotal: " + sTotal.ElapsedMilliseconds);
 			} else {
 				cameraView.MarkerRect = null;
 			}
-
-			cameraView.ProcessedImage = processed;
+			cameraView.ProcessedImage = scaled;
 		} catch(Exception e) {
 			Debug.Log (e.ToString ());
 		}
