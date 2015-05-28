@@ -46,17 +46,8 @@
 	</Reference>
   </ItemGroup>
   <ItemGroup>
-     <Compile Include="Assets\Cardboard\DemoScene\BinaryFilter.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\BinaryImage.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\BlobFinder.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\CameraView.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\DisableFog.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\EdgeDetection.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\EuclideanFilter.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\GrayscaleFilter.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\Image.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\ImageObjectScaler.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\Rectangle.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Teleport.cs" />
      <Compile Include="Assets\Cardboard\Legacy\DemoScene\TeleportLegacyUI.cs" />
      <Compile Include="Assets\Cardboard\Legacy\Scripts\CardboardOnGUI.cs" />
@@ -78,6 +69,9 @@
      <None Include="Assets\Cardboard\Resources\SolidColor.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="UnityImageProcessing">
+ <HintPath>/Users/caerostris/SpiderOak Hive/src/unity/VRCam/Assets/UnityImageProcessing.dll</HintPath>
  </Reference>
  <Reference Include="UnityEditor.iOS.Extensions.Xcode">
  <HintPath>/Applications/Unity/Unity.app/Contents/PlaybackEngines/iossupport/UnityEditor.iOS.Extensions.Xcode.dll</HintPath>

@@ -2,13 +2,18 @@
 using System.Collections;
 using System.IO;
 using System;
-using UnityColorFilters;
+using UnityImageProcessing;
 using System.Threading;
 
 public class CameraView : MonoBehaviour {
 	private WebCamTexture webcamTexture;
 	private bool processing = false;
 	public Image processedImage = null;
+	public Rectangle rectangle = null;
+	int count = 0;
+	GameObject noMarker = null;
+	GameObject screen = null;
+	GameObject obj = null;
 
 	public bool Processing {
 		get {
@@ -28,19 +33,39 @@ public class CameraView : MonoBehaviour {
 		webcamTexture.Play ();
 
 		StartProcessing ();
+		noMarker = GameObject.Find ("NoMarker");
+		obj = GameObject.Find ("Sphere");
 	}
 
 	// Update is called once per frame
 	void Update () {
 		if (!processing) {
-			Debug.Log ("finished processing");
 			StartProcessing();
 		}
 
-		if(processedImage != null) {
-			Texture2D tex2d = processedImage.GetTexture2D ();
-			GetComponent<Renderer> ().material.mainTexture = tex2d;
+		if (rectangle != null) {
+			Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (rectangle.MidPointX, rectangle.MidPointY); // (320, 240);
+			Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, obj.transform.localPosition.z);
+			obj.transform.localPosition = position;
+
+			noMarker.SetActive(false);
+
+			Debug.Log ("Rectangle Midpoint: " + rectangle.MidPointX + " " + rectangle.MidPointY);
+			Debug.Log ("Transformed:        " + markerCoordinate.x + " " + markerCoordinate.y);
+		} else {
+			noMarker.SetActive(true);
+		}
+
+		if (rectangle != null) {
+			if(processedImage != null)
+			{
+				Texture2D tex2d = processedImage.GetTexture2D ();
+				GetComponent<Renderer> ().material.mainTexture = tex2d;
+			}
+
 			processedImage = null;
+		} else {
+			GetComponent<Renderer> ().material.mainTexture = webcamTexture;
 		}
 	}
 
@@ -54,8 +79,23 @@ public class CameraView : MonoBehaviour {
 		try {
 			processorThread.Start();
 		} catch(Exception e) {
-			Debug.Log ("Could not start thread");
+			Debug.Log ("Could not start thread: " + e.ToString ());
 		}
+	}
+
+	Vector2 getRelativeCoordinateFromTextureCoordinate(int x, int y) {
+		Vector2 relativeCoordinate = new Vector2 ();
+
+		// convert x & y from top-left based to center-based coordinates
+		float xCenterBased = x - (webcamTexture.width / 2.0f);
+		float yCenterBased = y - (webcamTexture.width / 2.0f);
+		float xScaled = xCenterBased / (3.3333f * webcamTexture.width) * (-1);
+		float yScaled = yCenterBased / (3.3333f * webcamTexture.width) * (-1);
+
+		relativeCoordinate.x = xScaled;
+		relativeCoordinate.y = yScaled;
+
+		return relativeCoordinate;
 	}
 }
 
@@ -78,30 +118,43 @@ class ImageProcessor {
 	}
 
 	public void ThreadRun() {
-		Image processed = null;
 		try {
+System.Diagnostics.Stopwatch s = System.Diagnostics.Stopwatch.StartNew ();
+			// apply colour filters
+			Image processed = euclideanFilter.ApplyInPlace (image);
+			GrayscaleFilter.ApplyInPlace (processed);
+			binaryFilter.ApplyInPlace (processed);
 
-		processed = euclideanFilter.ApplyInPlace (image);
-		GrayscaleFilter.ApplyInPlace (processed);
-		binaryFilter.ApplyInPlace (processed);
-		BinaryImage bin = BinaryImage.FromImage (processed);
-		bin = EdgeDetection.Apply (bin);
-		bin = new ImageObjectScaler(40).Apply(bin);
-		processed = bin.GetImage ();
+			// turn to a binary image and apply edge detection
+			BinaryImage bin = BinaryImage.FromImage (processed);
+			bin = EdgeDetection.Apply (bin);
+			bin = new ImageObjectScaler(20).Apply(bin);
+			processed = bin.GetImage ();
 
-		Rectangle[] rectangles = blobFinder.Process (processed, cameraView);
+			// analyse the processed image for blobs
+			Rectangle[] rectangles = blobFinder.Process (processed);
+s.Stop ();
+			if(rectangles.Length > 0) {
+				Rectangle biggest = null;
+				foreach(Rectangle rect in rectangles) {
+					if(biggest == null || biggest.SurfaceArea < rect.SurfaceArea) {
+						biggest = rect;
+					}
+				}
 
-		if(rectangles.Length > 0) {
-			foreach(Rectangle rect in rectangles) {
-				Debug.Log (rect.TopLeftX + " " + rect.TopLeftY + " " + rect.BottomRightX + " " + rect.BottomRightY);
+				biggest.StrokeWidth = 5;
+				biggest.drawInPlace(image);
+				cameraView.rectangle = biggest;
+Debug.Log ("Time elapsed: " + s.ElapsedMilliseconds);
+			} else {
+				cameraView.rectangle = null;
 			}
-		}
 
+			cameraView.processedImage = image;
 		} catch(Exception e) {
 			Debug.Log (e.ToString ());
 		}
 
-	//	cameraView.processedImage = processed;
 		cameraView.Processing = false;
 	}
 }
