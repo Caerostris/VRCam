@@ -1,17 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Cardboard/DemoScene/CameraView.cs">
     <Files>
-      <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="86" Column="48" />
-      <File FileName="../UnityImageProcessing/EdgeDetection.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/BlobFinder.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/Image.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/EuclideanFilter.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/GrayscaleFilter.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/BinaryImage.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/BinaryFilter.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/Rectangle.cs" Line="1" Column="1" />
-      <File FileName="Assets/Cardboard/Scripts/CardboardEye.cs" Line="1" Column="1" />
+      <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="61" Column="3" />
+      <File FileName="../UnityImageProcessing/Rectangle.cs" Line="101" Column="9" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

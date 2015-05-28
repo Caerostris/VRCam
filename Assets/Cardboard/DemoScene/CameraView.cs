@@ -9,7 +9,7 @@ public class CameraView : MonoBehaviour {
 	private WebCamTexture webcamTexture;
 	private bool processing = false;
 	public Image processedImage = null;
-	public Rectangle rectangle = null;
+	public Rectangle markerRect = null;
 	int count = 0;
 	GameObject noMarker = null;
 	GameObject screen = null;
@@ -34,7 +34,7 @@ public class CameraView : MonoBehaviour {
 
 		StartProcessing ();
 		noMarker = GameObject.Find ("NoMarker");
-		obj = GameObject.Find ("Sphere");
+		obj = GameObject.Find ("Object");
 	}
 
 	// Update is called once per frame
@@ -43,29 +43,24 @@ public class CameraView : MonoBehaviour {
 			StartProcessing();
 		}
 
-		if (rectangle != null) {
-			Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (rectangle.MidPointX, rectangle.MidPointY); // (320, 240);
+		if (markerRect != null) {
+			Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (markerRect.MidPointX, markerRect.MidPointY); // (320, 240);
 			Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, obj.transform.localPosition.z);
 			obj.transform.localPosition = position;
 
 			noMarker.SetActive(false);
+			obj.SetActive (true);
 
-			Debug.Log ("Rectangle Midpoint: " + rectangle.MidPointX + " " + rectangle.MidPointY);
-			Debug.Log ("Transformed:        " + markerCoordinate.x + " " + markerCoordinate.y);
+//			Debug.Log ("Rectangle Midpoint: " + markerRect.MidPointX + " " + markerRect.MidPointY);
+//			Debug.Log ("Transformed:        " + markerCoordinate.x + " " + markerCoordinate.y);
 		} else {
 			noMarker.SetActive(true);
+			obj.SetActive(false);
 		}
 
-		if (rectangle != null) {
-			if(processedImage != null)
-			{
-				Texture2D tex2d = processedImage.GetTexture2D ();
-				GetComponent<Renderer> ().material.mainTexture = tex2d;
-			}
-
+		if (processedImage != null) {
+	//		GetComponent<Renderer> ().material.mainTexture = processedImage.GetTexture2D ();
 			processedImage = null;
-		} else {
-			GetComponent<Renderer> ().material.mainTexture = webcamTexture;
 		}
 	}
 
@@ -88,9 +83,9 @@ public class CameraView : MonoBehaviour {
 
 		// convert x & y from top-left based to center-based coordinates
 		float xCenterBased = x - (webcamTexture.width / 2.0f);
-		float yCenterBased = y - (webcamTexture.width / 2.0f);
-		float xScaled = xCenterBased / (3.3333f * webcamTexture.width) * (-1);
-		float yScaled = yCenterBased / (3.3333f * webcamTexture.width) * (-1);
+		float yCenterBased = y - (webcamTexture.height / 2.0f);
+		float xScaled = xCenterBased / (1.5f * webcamTexture.width) * (-1);
+		float yScaled = yCenterBased / (1.5f * webcamTexture.height) * (-1);
 
 		relativeCoordinate.x = xScaled;
 		relativeCoordinate.y = yScaled;
@@ -144,13 +139,13 @@ s.Stop ();
 
 				biggest.StrokeWidth = 5;
 				biggest.drawInPlace(image);
-				cameraView.rectangle = biggest;
+				cameraView.markerRect = biggest;
 Debug.Log ("Time elapsed: " + s.ElapsedMilliseconds);
 			} else {
-				cameraView.rectangle = null;
+				cameraView.markerRect = null;
 			}
 
-			cameraView.processedImage = image;
+			cameraView.processedImage = processed;
 		} catch(Exception e) {
 			Debug.Log (e.ToString ());
 		}
