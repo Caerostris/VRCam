@@ -7,22 +7,25 @@ using System.Threading;
 
 public class CameraView : MonoBehaviour {
 	private WebCamTexture webcamTexture;
-	private bool processing = false;
-	public Image processedImage = null;
-	public Rectangle markerRect = null;
-	int count = 0;
-	GameObject noMarker = null;
-	GameObject screen = null;
-	GameObject obj = null;
+	private GameObject noMarker = null;
+	private GameObject screen = null;
+	private GameObject obj = null;
+
+	private bool displayProcessed = false;
 
 	public bool Processing {
-		get {
-			return processing;
-		}
+		get;
+		set;
+	}
 
-		set {
-			processing = value;
-		}
+	public Image ProcessedImage {
+		get;
+		set;
+	}
+
+	public Rectangle MarkerRect {
+		get;
+		set;
 	}
 
 	// Use this for initialization
@@ -39,33 +42,36 @@ public class CameraView : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-		if (!processing) {
+		// restart the image processing thread
+		if (!Processing) {
 			StartProcessing();
 		}
 
-		if (markerRect != null) {
-			Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (markerRect.MidPointX, markerRect.MidPointY); // (320, 240);
+		// if object was found
+		if (MarkerRect != null) {
+			// update the objects position
+			Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (MarkerRect.MidPointX, MarkerRect.MidPointY); // (320, 240);
 			Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, obj.transform.localPosition.z);
 			obj.transform.localPosition = position;
 
+			// hide text and display the object
 			noMarker.SetActive(false);
 			obj.SetActive (true);
-
-//			Debug.Log ("Rectangle Midpoint: " + markerRect.MidPointX + " " + markerRect.MidPointY);
-//			Debug.Log ("Transformed:        " + markerCoordinate.x + " " + markerCoordinate.y);
 		} else {
+			// show text and hide the object
 			noMarker.SetActive(true);
 			obj.SetActive(false);
 		}
 
-		if (processedImage != null) {
-	//		GetComponent<Renderer> ().material.mainTexture = processedImage.GetTexture2D ();
-			processedImage = null;
+		// check whether or not we are supposed to display the processed image
+		if (ProcessedImage != null && displayProcessed) {
+			GetComponent<Renderer> ().material.mainTexture = ProcessedImage.GetTexture2D ();
+			ProcessedImage = null;
 		}
 	}
 
 	void StartProcessing() {
-		processing = true;
+		Processing = true;
 
 		Image image = Image.FromWebCamTexture (webcamTexture);
 		ImageProcessor processor = new ImageProcessor (image, this);
@@ -139,13 +145,13 @@ s.Stop ();
 
 				biggest.StrokeWidth = 5;
 				biggest.drawInPlace(image);
-				cameraView.markerRect = biggest;
+				cameraView.MarkerRect = biggest;
 Debug.Log ("Time elapsed: " + s.ElapsedMilliseconds);
 			} else {
-				cameraView.markerRect = null;
+				cameraView.MarkerRect = null;
 			}
 
-			cameraView.processedImage = processed;
+			cameraView.ProcessedImage = processed;
 		} catch(Exception e) {
 			Debug.Log (e.ToString ());
 		}
