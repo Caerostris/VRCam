@@ -1,17 +1,9 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Cardboard/DemoScene/ButtonHandler.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Cardboard/DemoScene/CameraView.cs">
     <Files>
-      <File FileName="Assets/Cardboard/DemoScene/ButtonHandler.cs" Line="28" Column="1" />
-      <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/BlobFinder.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/Rectangle.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/AssemblyInfo.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/BinaryFilter.cs" Line="1" Column="1" />
-      <File FileName="../UnityImageProcessing/BinaryImage.cs" Line="1" Column="1" />
-      <File FileName="Assets/Cardboard/Scripts/GazeInputModule.cs" Line="1" Column="1" />
-      <File FileName="Assets/Cardboard/Scripts/Cardboard.cs" Line="357" Column="13" />
-      <File FileName="Assets/Cardboard/Scripts/CardboardEye.cs" Line="89" Column="30" />
+      <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="153" Column="46" />
+      <File FileName="../UnityImageProcessing/EdgeDetection.cs" Line="26" Column="5" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

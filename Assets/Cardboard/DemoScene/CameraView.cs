@@ -20,7 +20,7 @@ public class CameraView : MonoBehaviour {
 	private GameObject screen = null;
 	private GameObject obj = null;
 
-	private bool displayProcessed = false;
+	private bool displayProcessed = true;
 
 	public bool Processing {
 		get;
@@ -77,7 +77,7 @@ public class CameraView : MonoBehaviour {
 
 		// check whether or not we are supposed to display the processed image
 		if (ProcessedImage != null && displayProcessed) {
-			objRenderer.material.mainTexture = ProcessedImage.GetTexture2D ();
+			GetComponent<Renderer> ().material.mainTexture = ProcessedImage.GetTexture2D ();
 			ProcessedImage = null;
 		}
 	}
@@ -118,6 +118,7 @@ class ImageProcessor {
 	EuclideanFilter euclideanFilter;
 	BinaryFilter binaryFilter;
 	BlobFinder blobFinder;
+	ImageScaler imageScaler;
 
 	public ImageProcessor(Image image, CameraView cameraview) {
 		this.image = image;
@@ -128,25 +129,26 @@ class ImageProcessor {
 		blobFinder = new BlobFinder ();
 		blobFinder.MinWidth = 50;
 		blobFinder.MinHeight = 50;
+		imageScaler = new ImageScaler (0.3f);
 	}
 
 	public void ThreadRun() {
 		try {
-System.Diagnostics.Stopwatch s = System.Diagnostics.Stopwatch.StartNew ();
+System.Diagnostics.Stopwatch sTotal = System.Diagnostics.Stopwatch.StartNew ();
 			// apply colour filters
-			Image processed = euclideanFilter.ApplyInPlace (image);
+			Image processed = imageScaler.Process(image);
+			euclideanFilter.ApplyInPlace (processed);
 			GrayscaleFilter.ApplyInPlace (processed);
 			binaryFilter.ApplyInPlace (processed);
 
 			// turn to a binary image and apply edge detection
 			BinaryImage bin = BinaryImage.FromImage (processed);
 			bin = EdgeDetection.Apply (bin);
-			bin = new ImageObjectScaler(20).Apply(bin);
+			bin = new ImageObjectScaler(5).Apply(bin);
 			processed = bin.GetImage ();
-
 			// analyse the processed image for blobs
 			Rectangle[] rectangles = blobFinder.Process (processed);
-s.Stop ();
+sTotal.Stop ();
 			if(rectangles.Length > 0) {
 				Rectangle biggest = null;
 				foreach(Rectangle rect in rectangles) {
@@ -158,7 +160,7 @@ s.Stop ();
 				biggest.StrokeWidth = 5;
 				biggest.drawInPlace(image);
 				cameraView.MarkerRect = biggest;
-Debug.Log ("Time elapsed: " + s.ElapsedMilliseconds);
+				Debug.Log ("sTotal: " + sTotal.ElapsedMilliseconds);
 			} else {
 				cameraView.MarkerRect = null;
 			}
