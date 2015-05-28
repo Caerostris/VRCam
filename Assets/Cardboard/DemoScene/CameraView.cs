@@ -7,7 +7,10 @@ using System.Threading;
 
 public class CameraView : MonoBehaviour {
 	private WebCamTexture webcamTexture;
-	private GameObject noMarker = null;
+	private Renderer noMarker = null;
+	private Renderer objRenderer = null;
+	private Color markerColor = new Color();
+	private Color objColor = new Color();
 	private GameObject screen = null;
 	private GameObject obj = null;
 
@@ -36,8 +39,11 @@ public class CameraView : MonoBehaviour {
 		webcamTexture.Play ();
 
 		StartProcessing ();
-		noMarker = GameObject.Find ("NoMarker");
+		noMarker = GameObject.Find ("NoMarker").GetComponent<Renderer> ();
+		markerColor = noMarker.material.color;
 		obj = GameObject.Find ("Object");
+		objRenderer = obj.GetComponent<Renderer> ();
+		objColor = objRenderer.material.color;
 	}
 
 	// Update is called once per frame
@@ -55,17 +61,17 @@ public class CameraView : MonoBehaviour {
 			obj.transform.localPosition = position;
 
 			// hide text and display the object
-			noMarker.SetActive(false);
-			obj.SetActive (true);
+			noMarker.material.color = new Color32(1, 1, 1, 0);
+			obj.GetComponent<Renderer> ().material.color = objColor;
 		} else {
 			// show text and hide the object
-			noMarker.SetActive(true);
-			obj.SetActive(false);
+			noMarker.material.color = markerColor;
+			objRenderer.material.color = new Color32(1, 1, 1, 0);
 		}
 
 		// check whether or not we are supposed to display the processed image
 		if (ProcessedImage != null && displayProcessed) {
-			GetComponent<Renderer> ().material.mainTexture = ProcessedImage.GetTexture2D ();
+			objRenderer.material.mainTexture = ProcessedImage.GetTexture2D ();
 			ProcessedImage = null;
 		}
 	}
