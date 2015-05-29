@@ -12,13 +12,21 @@ using UnityImageProcessing;
 using System.Threading;
 
 public class CameraView : MonoBehaviour {
+	public static DisplayMode displayMode = DisplayMode.Normal;
+
+	public enum DisplayMode {
+		Tracking,
+		Edge,
+		Binary,
+		Euclidean,
+		Normal
+	}
+
 	private WebCamTexture webcamTexture;
 	private Renderer noMarker = null;
 	private Color markerColor = new Color();
 	private GameObject obj = null;
-
-	private bool displayProcessed = false;
-
+	
 	public bool Processing {
 		get;
 		set;
@@ -70,7 +78,7 @@ public class CameraView : MonoBehaviour {
 			}
 
 			// check whether or not we are supposed to display the processed image
-			if (displayProcessed) {
+			if (displayMode != DisplayMode.Normal) {
 				GetComponent<Renderer> ().material.mainTexture = tex2d;
 			}
 		}
@@ -134,19 +142,44 @@ class ImageProcessor {
 
 	public void ThreadRun() {
 		try {
-			// apply colour filters
-			Image scaled = imageScaler.Process(image);
-			Image processed = euclideanFilter.Apply (scaled);
-			GrayscaleFilter.ApplyInPlace (processed);
-			binaryFilter.ApplyInPlace (processed);
+			Image processedImage = null;
 
-			// turn to a binary image and apply edge detection
+			// scale image down to make processing faster
+			Image processed  = imageScaler.Process(image);
+			if(CameraView.displayMode == CameraView.DisplayMode.Tracking) {
+				processedImage = copyImage(processed);
+			}
+
+			// apply euclidean filter
+			euclideanFilter.ApplyInPlace (processed);
+			if(CameraView.displayMode == CameraView.DisplayMode.Euclidean) {
+				processedImage = copyImage(processed);
+			}
+
+			// apply grayscale filter
+			GrayscaleFilter.ApplyInPlace (processed);
+
+			// apply binaryFilter
+			binaryFilter.ApplyInPlace (processed);
+			if(CameraView.displayMode == CameraView.DisplayMode.Binary) {
+				processedImage = copyImage(processed);
+			}
+
+			// turn to a BinaryImage and apply edge detection
 			BinaryImage bin = BinaryImage.FromImage (processed);
 			bin = EdgeDetection.Apply (bin);
-			bin = new ImageObjectScaler(5).Apply(bin);
+			bin = new ImageObjectScaler(3).Apply(bin);
 			processed = bin.GetImage ();
+			if(CameraView.displayMode == CameraView.DisplayMode.Edge) {
+				processedImage = copyImage(processed);
+			}
+
 			// analyse the processed image for blobs
 			Rectangle[] rectangles = blobFinder.Process (processed);
+
+			if(CameraView.displayMode == CameraView.DisplayMode.Normal) {
+				processedImage = processed;
+			}
 
 			if(rectangles.Length > 0) {
 				Rectangle biggest = null;
@@ -156,17 +189,31 @@ class ImageProcessor {
 					}
 				}
 
-				biggest.StrokeWidth = 5;
-				biggest.drawInPlace(scaled);
+				// check if we are supposed to display the tracking
+				if(CameraView.displayMode != CameraView.DisplayMode.Normal) {
+					biggest.StrokeWidth = 5;
+					biggest.drawInPlace(processedImage);
+				}
+
+				// update marker in the CameraView
 				cameraView.MarkerRect = biggest;
 			} else {
 				cameraView.MarkerRect = null;
 			}
-			cameraView.ProcessedImage = scaled;
+
+			// update processed image in the camera view
+			cameraView.ProcessedImage = processedImage;
 		} catch(Exception e) {
 			Debug.Log (e.ToString ());
 		}
 
 		cameraView.Processing = false;
+	}
+
+	private Image copyImage(Image image) {
+		Color32[] newPixels = new Color32[image.Pixels.Length];
+		image.Pixels.CopyTo (newPixels, 0);
+
+		return new Image (newPixels, image.Width, image.Height);
 	}
 }
