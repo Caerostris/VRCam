@@ -14,12 +14,10 @@ using System.Threading;
 public class CameraView : MonoBehaviour {
 	private WebCamTexture webcamTexture;
 	private Renderer noMarker = null;
-	private Renderer objRenderer = null;
 	private Color markerColor = new Color();
-	private Color objColor = new Color();
 	private GameObject obj = null;
 
-	private bool displayProcessed = true;
+	private bool displayProcessed = false;
 
 	public bool Processing {
 		get;
@@ -47,8 +45,6 @@ public class CameraView : MonoBehaviour {
 		noMarker = GameObject.Find ("NoMarker").GetComponent<Renderer> ();
 		markerColor = noMarker.material.color;
 		obj = GameObject.Find ("Object");
-		objRenderer = obj.GetComponent<Renderer> ();
-		objColor = objRenderer.material.color;
 	}
 
 	// Update is called once per frame
@@ -70,7 +66,7 @@ public class CameraView : MonoBehaviour {
 
 				// hide text and display the object
 				noMarker.material.color = new Color32 (1, 1, 1, 0);
-				obj.GetComponent<Renderer> ().material.color = objColor;
+				obj.SetActive (true);
 			}
 
 			// check whether or not we are supposed to display the processed image
@@ -80,10 +76,9 @@ public class CameraView : MonoBehaviour {
 		}
 
 		if (MarkerRect == null) {
-			Debug.Log ("marker null");
 			// show text and hide the object
 			noMarker.material.color = markerColor;
-			objRenderer.material.color = new Color32 (1, 1, 1, 0);
+			obj.SetActive (false);
 		}
 	}
 
@@ -129,12 +124,12 @@ class ImageProcessor {
 		this.image = image;
 		this.cameraView = cameraview;
 
-		euclideanFilter = new EuclideanFilter (new Color32 (235, 125, 35, 1), 80);
+		euclideanFilter = new EuclideanFilter (new Color32 (235, 125, 35, 1), 60); // orange
 		binaryFilter = new BinaryFilter (20);
 		blobFinder = new BlobFinder ();
-		blobFinder.MinWidth = 15;
-		blobFinder.MinHeight = 15;
-		imageScaler = new ImageScaler (0.2f);
+		blobFinder.MinWidth = 5;
+		blobFinder.MinHeight = 5;
+		imageScaler = new ImageScaler (0.1f);
 	}
 
 	public void ThreadRun() {
