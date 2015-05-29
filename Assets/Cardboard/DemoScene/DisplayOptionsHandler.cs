@@ -1,23 +1,29 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * Copyright (c) 2015 Keno Schwalb
+ */
+
 using UnityEngine;
 
 public class DisplayOptionsHandler : MonoBehaviour {
 	public void TrackingButtonClicked () {
-		CameraView.displayMode = CameraView.DisplayMode.Tracking;
+		CameraView.setDisplayMode (CameraView.DisplayMode.Tracking);
 	}
 
 	public void EdgeButtonClicked () {
-		CameraView.displayMode = CameraView.DisplayMode.Edge;
+		CameraView.setDisplayMode (CameraView.DisplayMode.Edge);
 	}
 
 	public void BinaryButtonClicked () {
-		CameraView.displayMode = CameraView.DisplayMode.Binary;
+		CameraView.setDisplayMode (CameraView.DisplayMode.Binary);
 	}
 
 	public void EuclideanButtonClicked () {
-		CameraView.displayMode = CameraView.DisplayMode.Euclidean;
+		CameraView.setDisplayMode (CameraView.DisplayMode.Euclidean);
 	}
 
 	public void NormalButtonClicked () {
-		CameraView.displayMode = CameraView.DisplayMode.Normal;
+		CameraView.setDisplayMode (CameraView.DisplayMode.Normal);
 	}
 }

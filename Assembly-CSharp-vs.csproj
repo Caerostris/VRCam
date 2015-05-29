@@ -49,6 +49,7 @@
      <Compile Include="Assets\Cardboard\DemoScene\CameraView.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\DisableFog.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\DisplayOptionsHandler.cs" />
+     <Compile Include="Assets\Cardboard\DemoScene\ImageAnalysisOptionsHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\SettingsButtonHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Teleport.cs" />
      <Compile Include="Assets\Cardboard\Legacy\DemoScene\TeleportLegacyUI.cs" />

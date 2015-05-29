@@ -13,6 +13,15 @@ using System.Threading;
 
 public class CameraView : MonoBehaviour {
 	public static DisplayMode displayMode = DisplayMode.Normal;
+	private static bool displayModeChanged = false;
+	public static bool scaleImage = true;
+	public static Color32 markerColour = new Color32 (235, 125, 35, 1); // orange
+
+	public static void setDisplayMode(DisplayMode displayMode) {
+		CameraView.displayMode = displayMode;
+		// update camera texture
+		displayModeChanged = true;
+	}
 
 	public enum DisplayMode {
 		Tracking,
@@ -78,8 +87,16 @@ public class CameraView : MonoBehaviour {
 			}
 
 			// check whether or not we are supposed to display the processed image
-			if (displayMode != DisplayMode.Normal) {
+			if(displayMode != DisplayMode.Normal) {
 				GetComponent<Renderer> ().material.mainTexture = tex2d;
+			}
+
+			if (displayModeChanged && displayMode == DisplayMode.Normal) {
+				GetComponent<Renderer> ().material.mainTexture = webcamTexture;
+			}
+
+			if(displayModeChanged) {
+				displayModeChanged = false;
 			}
 		}
 
@@ -132,7 +149,7 @@ class ImageProcessor {
 		this.image = image;
 		this.cameraView = cameraview;
 
-		euclideanFilter = new EuclideanFilter (new Color32 (235, 125, 35, 1), 60); // orange
+		euclideanFilter = new EuclideanFilter (CameraView.markerColour, 60);
 		binaryFilter = new BinaryFilter (20);
 		blobFinder = new BlobFinder ();
 		blobFinder.MinWidth = 5;
@@ -145,7 +162,13 @@ class ImageProcessor {
 			Image processedImage = null;
 
 			// scale image down to make processing faster
-			Image processed  = imageScaler.Process(image);
+			Image processed  = image;
+
+			if(CameraView.scaleImage) {
+				processed = imageScaler.Process(image);
+			}
+
+			// make a copy of the scaled image for drawing the tracker
 			if(CameraView.displayMode == CameraView.DisplayMode.Tracking) {
 				processedImage = copyImage(processed);
 			}
