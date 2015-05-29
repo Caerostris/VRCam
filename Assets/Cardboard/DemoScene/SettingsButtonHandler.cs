@@ -23,6 +23,7 @@ public class SettingsButtonHandler : MonoBehaviour {
 	}
 
 	public void ButtonClicked () {
+		CameraView.startCalibration = true;
 		activeState = !activeState;
 
 		displayOptionsPanel.SetActive (activeState);

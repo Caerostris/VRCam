@@ -12,10 +12,16 @@ using UnityImageProcessing;
 using System.Threading;
 
 public class CameraView : MonoBehaviour {
+	// display
 	public static DisplayMode displayMode = DisplayMode.Normal;
 	private static bool displayModeChanged = false;
 	public static bool scaleImage = true;
-	public static Color32 markerColour = new Color32 (235, 125, 35, 1); // orange
+	public static Color32 markerColor = new Color32 (235, 125, 35, 1); // orange
+
+	// calibration
+	public static bool startCalibration = false;
+	private bool calibrating = false;
+	private float calibrationStartTime;
 
 	public static void setDisplayMode(DisplayMode displayMode) {
 		CameraView.displayMode = displayMode;
@@ -33,7 +39,7 @@ public class CameraView : MonoBehaviour {
 
 	private WebCamTexture webcamTexture;
 	private Renderer noMarker = null;
-	private Color markerColor = new Color();
+	private Color markerModelColor = new Color();
 	private GameObject obj = null;
 	
 	public bool Processing {
@@ -60,17 +66,67 @@ public class CameraView : MonoBehaviour {
 
 		StartProcessing ();
 		noMarker = GameObject.Find ("NoMarker").GetComponent<Renderer> ();
-		markerColor = noMarker.material.color;
+		markerModelColor = noMarker.material.color;
 		obj = GameObject.Find ("Object");
 	}
 
 	// Update is called once per frame
 	void Update () {
-		// restart the image processing thread
-		if (!Processing) {
-			StartProcessing();
+		Debug.Log (markerColor);
+		// calibration
+		if (startCalibration || calibrating) {
+			GameObject text = GameObject.Find ("NoMarker");
+
+			if(startCalibration) {
+				startCalibration = false;
+
+				// reset to normal view
+				GetComponent<Renderer> ().material.mainTexture = webcamTexture;
+
+				// show object and text
+				noMarker.material.color = markerModelColor;
+				obj.SetActive (true);
+
+				// place object in the middle of the screen as pointer
+				Vector3 position = new Vector3 (0, 0, obj.transform.localPosition.z);
+				obj.transform.localPosition = position;
+
+				// start countdown
+				calibrationStartTime = Time.time;
+				text.GetComponent<TextMesh> ().text = "3";
+				calibrating = true;
+			}
+
+			if(calibrating) {
+				// check time, update timer, get middle pixel and find colour
+				float seconds = Time.time - calibrationStartTime;
+
+				if(seconds >= 4) {
+					calibrating = false;
+					text.GetComponent<TextMesh> ().text = "No marker found";
+				} else if(seconds >= 3) {
+					// get mid point of webcam image
+					int x = (int) (webcamTexture.width * 0.5f);
+					int y = (int) (webcamTexture.height * 0.5f);
+
+					Image image = new Image(webcamTexture.GetPixels32 (), webcamTexture.width, webcamTexture.height);
+					markerColor = image.getPixel(x, y);
+				} else if(seconds >= 2) {
+					text.GetComponent<TextMesh> ().text = "1";
+				} else if(seconds >= 1) {
+					text.GetComponent<TextMesh> ().text = "2";
+				}
+			}
+
+			return;
 		}
 
+		// restart the image processing thread if it's not running
+		if (!Processing) {
+			StartProcessing ();
+		}
+
+		// if we have image data available
 		if (ProcessedImage != null) {
 			Texture2D tex2d = ProcessedImage.GetTexture2D ();
 
@@ -90,19 +146,21 @@ public class CameraView : MonoBehaviour {
 			if(displayMode != DisplayMode.Normal) {
 				GetComponent<Renderer> ().material.mainTexture = tex2d;
 			}
-
-			if (displayModeChanged && displayMode == DisplayMode.Normal) {
-				GetComponent<Renderer> ().material.mainTexture = webcamTexture;
-			}
-
-			if(displayModeChanged) {
-				displayModeChanged = false;
-			}
 		}
 
-		if (MarkerRect == null) {
+		// check whether or not we have to reset to display the normal image
+		if (displayModeChanged && displayMode == DisplayMode.Normal) {
+			GetComponent<Renderer> ().material.mainTexture = webcamTexture;
+		}
+
+		if(displayModeChanged) {
+			displayModeChanged = false;
+		}
+
+		// if object was not found
+		if (MarkerRect == null || ProcessedImage == null) {
 			// show text and hide the object
-			noMarker.material.color = markerColor;
+			noMarker.material.color = markerModelColor;
 			obj.SetActive (false);
 		}
 	}
@@ -149,12 +207,12 @@ class ImageProcessor {
 		this.image = image;
 		this.cameraView = cameraview;
 
-		euclideanFilter = new EuclideanFilter (CameraView.markerColour, 60);
+		euclideanFilter = new EuclideanFilter (CameraView.markerColor, 80);
 		binaryFilter = new BinaryFilter (20);
 		blobFinder = new BlobFinder ();
 		blobFinder.MinWidth = 5;
 		blobFinder.MinHeight = 5;
-		imageScaler = new ImageScaler (0.1f);
+		imageScaler = new ImageScaler (0.15f);
 	}
 
 	public void ThreadRun() {

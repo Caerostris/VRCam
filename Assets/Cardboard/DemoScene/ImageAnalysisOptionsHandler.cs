@@ -17,5 +17,6 @@ public class ImageAnalysisOptionsHandler : MonoBehaviour
 	}
 
 	public void CalibrateButtonClicked () {
+		CameraView.startCalibration = true;
 	}
 }
