@@ -51,6 +51,7 @@
      <Compile Include="Assets\Cardboard\DemoScene\DisplayOptionsHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\ImageAnalysisOptionsHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\SettingsButtonHandler.cs" />
+     <Compile Include="Assets\Cardboard\DemoScene\Startup.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Teleport.cs" />
      <Compile Include="Assets\Cardboard\Legacy\DemoScene\TeleportLegacyUI.cs" />
      <Compile Include="Assets\Cardboard\Legacy\Scripts\CardboardOnGUI.cs" />
@@ -65,6 +66,7 @@
      <Compile Include="Assets\Cardboard\Scripts\GazeInputModule.cs" />
      <Compile Include="Assets\Cardboard\Scripts\RadialUndistortionEffect.cs" />
      <Compile Include="Assets\Cardboard\Scripts\StereoController.cs" />
+     <Compile Include="Assets\ExportAsset.cs" />
      <None Include="Assets\Cardboard\Legacy\Resources\SkyboxMesh.shader" />
      <None Include="Assets\Cardboard\Legacy\Resources\GUIScreen.shader" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
@@ -72,6 +74,9 @@
      <None Include="Assets\Cardboard\Resources\SolidColor.shader" />
  <Reference Include="UnityEngine.UI">
  <HintPath>/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
+ </Reference>
+ <Reference Include="Newtonsoft.Json">
+ <HintPath>/Users/caerostris/SpiderOak Hive/src/unity/VRCam/Assets/Newtonsoft.Json.dll</HintPath>
  </Reference>
  <Reference Include="UnityImageProcessing">
  <HintPath>/Users/caerostris/SpiderOak Hive/src/unity/VRCam/Assets/UnityImageProcessing.dll</HintPath>

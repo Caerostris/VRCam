@@ -1,0 +1,28 @@
+ManifestFileVersion: 0
+CRC: 251669657
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 29bd1fa7ad10d67dae23f4845be4ef0b
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 6e644dc92de90b57dfe6d229002a2c7e
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 43
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+Assets:
+- Assets/robot.obj
+Dependencies: []

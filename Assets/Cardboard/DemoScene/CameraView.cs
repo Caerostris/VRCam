@@ -16,7 +16,6 @@ public class CameraView : MonoBehaviour {
 	public static DisplayMode displayMode = DisplayMode.Normal;
 	private static bool displayModeChanged = false;
 	public static bool scaleImage = true;
-	public static Color32 markerColor = new Color32 (235, 125, 35, 1); // orange
 
 	// calibration
 	public static bool startCalibration = false;
@@ -38,9 +37,11 @@ public class CameraView : MonoBehaviour {
 	}
 
 	private WebCamTexture webcamTexture;
-	private Renderer noMarker = null;
+	private Renderer noMarkerRenderer = null;
+	private GameObject noMarker = null;
+	private string noMarkerText = null;
 	private Color markerModelColor = new Color();
-	private GameObject obj = null;
+	private bool initialised = false;
 	
 	public bool Processing {
 		get;
@@ -57,26 +58,38 @@ public class CameraView : MonoBehaviour {
 		set;
 	}
 
-	// Use this for initialization
 	void Start () {
 		// initialise the front camera and map it to the plane
 		webcamTexture = new WebCamTexture ();
 		GetComponent<Renderer> ().material.mainTexture = webcamTexture;
 		webcamTexture.Play ();
+		
+		Processing = false;
+		noMarker = GameObject.Find ("NoMarker");
+		noMarkerRenderer = noMarker.GetComponent<Renderer> ();
+		markerModelColor = noMarkerRenderer.material.color;
+		noMarkerText = noMarker.GetComponent<TextMesh> ().text;
+		noMarker.GetComponent<TextMesh> ().text = "Model not initialised";
+	}
 
-		StartProcessing ();
-		noMarker = GameObject.Find ("NoMarker").GetComponent<Renderer> ();
-		markerModelColor = noMarker.material.color;
-		obj = GameObject.Find ("Object");
+	// Use this for initialization
+	void init () {
+		noMarker.GetComponent<TextMesh> ().text = noMarkerText;
+		initialised = true;
 	}
 
 	// Update is called once per frame
 	void Update () {
-		Debug.Log (markerColor);
+		if (Startup.config == null || Startup.config.currentObject == null) {
+			return;
+		}
+
+		if (!initialised) {
+			init ();
+		}
+
 		// calibration
 		if (startCalibration || calibrating) {
-			GameObject text = GameObject.Find ("NoMarker");
-
 			if(startCalibration) {
 				startCalibration = false;
 
@@ -84,16 +97,16 @@ public class CameraView : MonoBehaviour {
 				GetComponent<Renderer> ().material.mainTexture = webcamTexture;
 
 				// show object and text
-				noMarker.material.color = markerModelColor;
-				obj.SetActive (true);
+				noMarkerRenderer.material.color = markerModelColor;
+				Startup.config.currentObject.SetActive (true);
 
 				// place object in the middle of the screen as pointer
-				Vector3 position = new Vector3 (0, 0, obj.transform.localPosition.z);
-				obj.transform.localPosition = position;
+				Vector3 position = new Vector3 (0, 0, Startup.config.currentObject.transform.localPosition.z);
+				Startup.config.currentObject.transform.localPosition = position;
 
 				// start countdown
 				calibrationStartTime = Time.time;
-				text.GetComponent<TextMesh> ().text = "3";
+				noMarker.GetComponent<TextMesh> ().text = "3";
 				calibrating = true;
 			}
 
@@ -103,18 +116,18 @@ public class CameraView : MonoBehaviour {
 
 				if(seconds >= 4) {
 					calibrating = false;
-					text.GetComponent<TextMesh> ().text = "No marker found";
+					noMarker.GetComponent<TextMesh> ().text = noMarkerText;
 				} else if(seconds >= 3) {
 					// get mid point of webcam image
 					int x = (int) (webcamTexture.width * 0.5f);
 					int y = (int) (webcamTexture.height * 0.5f);
 
 					Image image = new Image(webcamTexture.GetPixels32 (), webcamTexture.width, webcamTexture.height);
-					markerColor = image.getPixel(x, y);
+					Startup.config.analysis.markerColor = image.getPixel(x, y);
 				} else if(seconds >= 2) {
-					text.GetComponent<TextMesh> ().text = "1";
+					noMarker.GetComponent<TextMesh> ().text = "1";
 				} else if(seconds >= 1) {
-					text.GetComponent<TextMesh> ().text = "2";
+					noMarker.GetComponent<TextMesh> ().text = "2";
 				}
 			}
 
@@ -134,12 +147,12 @@ public class CameraView : MonoBehaviour {
 			if (MarkerRect != null ) {
 				// update the objects position
 				Vector2 markerCoordinate = getRelativeCoordinateFromTextureCoordinate (MarkerRect.MidPointX, MarkerRect.MidPointY, tex2d); // (320, 240);
-				Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, obj.transform.localPosition.z);
-				obj.transform.localPosition = position;
+				Vector3 position = new Vector3 (markerCoordinate.x, markerCoordinate.y, Startup.config.currentObject.transform.localPosition.z);
+				Startup.config.currentObject.transform.localPosition = position;
 
 				// hide text and display the object
-				noMarker.material.color = new Color32 (1, 1, 1, 0);
-				obj.SetActive (true);
+				noMarkerRenderer.material.color = new Color32 (1, 1, 1, 0);
+				Startup.config.currentObject.SetActive (true);
 			}
 
 			// check whether or not we are supposed to display the processed image
@@ -160,8 +173,8 @@ public class CameraView : MonoBehaviour {
 		// if object was not found
 		if (MarkerRect == null || ProcessedImage == null) {
 			// show text and hide the object
-			noMarker.material.color = markerModelColor;
-			obj.SetActive (false);
+			noMarkerRenderer.material.color = markerModelColor;
+			Startup.config.currentObject.SetActive (false);
 		}
 	}
 
@@ -196,6 +209,7 @@ public class CameraView : MonoBehaviour {
 }
 
 class ImageProcessor {
+	Config config;
 	Image image;
 	CameraView cameraView;
 	EuclideanFilter euclideanFilter;
@@ -204,15 +218,16 @@ class ImageProcessor {
 	ImageScaler imageScaler;
 
 	public ImageProcessor(Image image, CameraView cameraview) {
+		this.config = Startup.config;
 		this.image = image;
 		this.cameraView = cameraview;
 
-		euclideanFilter = new EuclideanFilter (CameraView.markerColor, 80);
-		binaryFilter = new BinaryFilter (20);
+		euclideanFilter = new EuclideanFilter (config.analysis.markerColor, config.analysis.deviation);
+		binaryFilter = new BinaryFilter (config.analysis.binaryThreshold);
 		blobFinder = new BlobFinder ();
-		blobFinder.MinWidth = 5;
-		blobFinder.MinHeight = 5;
-		imageScaler = new ImageScaler (0.15f);
+		blobFinder.MinWidth = config.analysis.markerMinWidth;
+		blobFinder.MinHeight = config.analysis.markerMinHeight;
+		imageScaler = new ImageScaler (config.analysis.scaleFactor);
 	}
 
 	public void ThreadRun() {
@@ -249,7 +264,7 @@ class ImageProcessor {
 			// turn to a BinaryImage and apply edge detection
 			BinaryImage bin = BinaryImage.FromImage (processed);
 			bin = EdgeDetection.Apply (bin);
-			bin = new ImageObjectScaler(3).Apply(bin);
+			bin = new ImageObjectScaler(config.analysis.edgeScale).Apply(bin);
 			processed = bin.GetImage ();
 			if(CameraView.displayMode == CameraView.DisplayMode.Edge) {
 				processedImage = copyImage(processed);
