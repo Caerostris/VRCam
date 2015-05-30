@@ -48,7 +48,7 @@ The configuration file mainly has two parts. All parameters are mandatory. An ex
     "markerMinHeight": 5
   },
   "model": {
-    "assetURL": "file:///Users/caerostris/SpiderOak Hive/src/unity/VRCam/Assets/object.unity3d",
+    "assetURL": "file:///Users/caerostris/src/unity/VRCam/Assets/object.unity3d",
     "scaleX": 0.0015,
     "scaleY": 0.0015,
     "scaleZ": 0.0015,
@@ -90,7 +90,7 @@ VRCam continously scans the current camera frame for the marker. If it was found
 
 ### Finding the marker
 
-Various filters are applied to the image in order to find the marker.
+The tracking algorithm processes as many camera frames as possible. It starts with the raw camera image and applies various filters to find the marker.
 
 #### Scaling
 
