@@ -47,18 +47,10 @@
   </ItemGroup>
   <ItemGroup>
      <Compile Include="Assets\Cardboard\DemoScene\CameraView.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\DisableFog.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\DisplayOptionsHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\ImageAnalysisOptionsHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\SettingsButtonHandler.cs" />
      <Compile Include="Assets\Cardboard\DemoScene\Startup.cs" />
-     <Compile Include="Assets\Cardboard\DemoScene\Teleport.cs" />
-     <Compile Include="Assets\Cardboard\Legacy\DemoScene\TeleportLegacyUI.cs" />
-     <Compile Include="Assets\Cardboard\Legacy\Scripts\CardboardOnGUI.cs" />
-     <Compile Include="Assets\Cardboard\Legacy\Scripts\CardboardOnGUIMouse.cs" />
-     <Compile Include="Assets\Cardboard\Legacy\Scripts\CardboardOnGUIWindow.cs" />
-     <Compile Include="Assets\Cardboard\Legacy\Scripts\SkyboxMesh.cs" />
-     <Compile Include="Assets\Cardboard\Legacy\Scripts\StereoLensFlare.cs" />
      <Compile Include="Assets\Cardboard\Scripts\Cardboard.cs" />
      <Compile Include="Assets\Cardboard\Scripts\CardboardEye.cs" />
      <Compile Include="Assets\Cardboard\Scripts\CardboardHead.cs" />
@@ -67,8 +59,6 @@
      <Compile Include="Assets\Cardboard\Scripts\RadialUndistortionEffect.cs" />
      <Compile Include="Assets\Cardboard\Scripts\StereoController.cs" />
      <Compile Include="Assets\ExportAsset.cs" />
-     <None Include="Assets\Cardboard\Legacy\Resources\SkyboxMesh.shader" />
-     <None Include="Assets\Cardboard\Legacy\Resources\GUIScreen.shader" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
      <None Include="Assets\Cardboard\Resources\RadialUndistortionEffect.shader" />
      <None Include="Assets\Cardboard\Resources\SolidColor.shader" />
