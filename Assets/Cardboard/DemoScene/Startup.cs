@@ -7,13 +7,18 @@ public class Startup : MonoBehaviour {
 	public static Config config = null;
 
 	public void Start () {
+		Debug.Log (Application.persistentDataPath);
+		Debug.Log (Application.dataPath);
 		// read config or create if it does not exist
 		Config config;
 		try {
 			StreamReader r = new StreamReader (Application.persistentDataPath + "/config.json");
 			string json = r.ReadToEnd ();
 			config = JsonConvert.DeserializeObject<Config> (json);
-		} catch(FileNotFoundException exc) {
+		} catch(IOException exc) {
+			Debug.Log ("Config not found. Creating. " + exc.ToString ());
+			config = Startup.createConfig ();
+		} catch(System.IO.IsolatedStorage.IsolatedStorageException exc) {
 			Debug.Log ("Config not found. Creating. " + exc.ToString ());
 			config = Startup.createConfig ();
 		}
@@ -29,17 +34,35 @@ public class Startup : MonoBehaviour {
 			yield return www;
 
 			AssetBundle assetBundle = www.assetBundle;
-			GameObject gameObject = assetBundle.LoadAsset<GameObject> 	("robot");
-			gameObject = Instantiate(gameObject);
+			GameObject gameObject;
+			GameObject defaultObject = gameObject = GameObject.Find ("Object");
+			if(assetBundle != null) {
+				// remove default object
+				GameObject.Destroy (defaultObject);
 
-			gameObject.name = "Object";
-			gameObject.transform.eulerAngles = new Vector3(config.model.rotationX, config.model.rotationY, config.model.rotationZ);
-			gameObject.transform.localScale = new Vector3 (config.model.scaleX, config.model.scaleY, config.model.scaleZ);
-			gameObject.transform.parent = GameObject.Find ("Screen").transform;
-			gameObject.transform.localPosition = new Vector3 (0, 0, config.model.distance);
+				// load the new object
+				gameObject = assetBundle.LoadAsset<GameObject> 	("robot");
+				gameObject = Instantiate(gameObject);
+
+				// set parameters
+				gameObject.name = "Object";
+				gameObject.transform.eulerAngles = new Vector3(config.model.rotationX, config.model.rotationY, config.model.rotationZ);
+				gameObject.transform.localScale = new Vector3 (config.model.scaleX, config.model.scaleY, config.model.scaleZ);
+				gameObject.transform.parent = GameObject.Find ("Screen").transform;
+				gameObject.transform.localPosition = new Vector3 (0, 0, config.model.distance);
+			} else {
+				Debug.Log ("Could not load asset from config file, using default");
+				gameObject = defaultObject;
+			}
+
+			if(gameObject == null) {
+				Debug.Log ("NOOOO");
+			}
 
 			Startup.config.currentObject = gameObject;
-			assetBundle.Unload(false);
+			if(assetBundle != null) {
+				assetBundle.Unload(false);
+			}
 		}
 	}
 

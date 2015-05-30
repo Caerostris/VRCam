@@ -1,12 +1,13 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Cardboard/DemoScene/Startup.cs">
     <Files>
-      <File FileName="Assets/ExportAsset.cs" Line="9" Column="49" />
-      <File FileName="Assets/Cardboard/DemoScene/Startup.cs" Line="10" Column="48" />
+      <File FileName="Assets/ExportAsset.cs" Line="7" Column="12" />
+      <File FileName="Assets/Cardboard/DemoScene/Startup.cs" Line="49" Column="46" />
       <File FileName="Assets/Cardboard/DemoScene/CameraView.cs" Line="72" Column="36" />
-      <File FileName="Assets/Cardboard/Scripts/CardboardEye.cs" Line="89" Column="30" />
+      <File FileName="Assets/Cardboard/Scripts/CardboardEye.cs" Line="1" Column="1" />
       <File FileName="Assets/Cardboard/DemoScene/SettingsButtonHandler.cs" Line="1" Column="1" />
+      <File FileName="Assets/Cardboard/Scripts/Cardboard.cs" Line="15" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
