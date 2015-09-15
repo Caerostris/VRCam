@@ -94,43 +94,43 @@ The glow effect in all following images is an effect in unity in not part of the
 ### Finding the marker
 
 The tracking algorithm processes as many camera frames as possible. It starts with the raw camera image and applies various filters to find the marker.
-![original image](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_orig.jpg)
+![original image](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_orig.jpg)
 
 #### Scaling
 
 Image is scaled down to improve performance.
-![scaled](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_scaled.jpg)
+![scaled](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_scaled.jpg)
 
 #### Euclidean Filter
 
 A euclidean filter searches the picture for a specific colour and all colours *similar* within a given margin.  
 Every pixel that does not match the given colour will be set to black. This filters removes everything from the image that does not match the marker's colour.
-![euclidean filter](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_euclidean.jpg)
+![euclidean filter](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_euclidean.jpg)
 
 #### Grayscale filter
 
 The image is converted to grayscale using an averaging algorithm.
-![grayscale filter](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_grayscale.jpg)
+![grayscale filter](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_grayscale.jpg)
 
 #### Binary filter
 
 The image is converted to a binary image. A binary image consists of only two colours, black and white. The intensity is measured for every pixel. Only if it is above a given threshold will be pixel be set to white. Thereby the image is filtered for noise.
-![binary filter](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_binary.jpg)
+![binary filter](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_binary.jpg)
 
 #### Edge detection
 
 An edge detection algorithm is applied. Everything except the every object's edges will be removed from the image.
-![edge detection](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_edge.jpg)
+![edge detection](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_edge.jpg)
 
 #### Edge scaling
 
 The edges are scaled up to make them more visible.
-![edge scaling](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_scalededge.jpg)
+![edge scaling](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_scalededge.jpg)
 
 #### Blob detection
 
 This is where the actual tracking takes place: VRCam goes over the image pixel by pixel. When a white pixel is encountered, a breadth-first-search algorithm finds the coordinates of all white pixels that are connected to the first pixel. The outmost pixels to the left, right, top and bottom. Thereby, the position of all "blobs" in the image are detected. The biggest blob is assumed to be the marker.
-![blob detection](https://ks.re/ks225/vrcam/raw/master/bin/img/vrc_blob.jpg)
+![blob detection](https://0x.cx/ks225/vrcam/raw/master/bin/img/vrc_blob.jpg)
 
 ## License
 
